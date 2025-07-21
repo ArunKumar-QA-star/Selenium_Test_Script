@@ -1,0 +1,130 @@
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class SeleniumExample {
+    public static void main(String[] args) {
+        // Set up WebDriver
+        System.setProperty("webdriver.chrome.driver", "path/to/chromedriver");
+        WebDriver driver = new ChromeDriver();
+
+        // Variables
+        String url = "https://example.com";
+        int timeout = 10;
+
+        // Navigate to URL
+        driver.get(url);
+
+        // Conditional statement
+        if (driver.getTitle().contains("Example")) {
+            System.out.println("Title contains 'Example'");
+        } else {
+            System.out.println("Title does not contain 'Example'");
+        }
+
+        // Close browser
+        driver.quit();
+    }
+}
+
+package utilities;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+
+public class BaseTest {
+    public WebDriver driver;
+
+    @BeforeMethod
+    public void setUp() {
+        System.setProperty("webdriver.chrome.driver", "path/to/chromedriver");
+        driver = new ChromeDriver();
+        driver.manage().window().maximize();
+        driver.get("https://example.com/login");
+    }
+
+    @AfterMethod
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}
+
+
+package pages;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+
+public class LoginPage {
+    WebDriver driver;
+
+    // Locators
+    By usernameField = By.id("username");
+    By passwordField = By.id("password");
+    By loginButton = By.id("loginBtn");
+
+    // Constructor
+    public LoginPage(WebDriver driver) {
+        this.driver = driver;
+    }
+
+    // Methods/Actions
+    public void enterUsername(String username) {
+        driver.findElement(usernameField).sendKeys(username);
+    }
+
+    public void enterPassword(String password) {
+        driver.findElement(passwordField).sendKeys(password);
+    }
+
+    public void clickLogin() {
+        driver.findElement(loginButton).click();
+    }
+}
+
+
+package pages;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+
+public class HomePage {
+    WebDriver driver;
+
+    By welcomeText = By.id("welcome");
+
+    public HomePage(WebDriver driver) {
+        this.driver = driver;
+    }
+
+    public String getWelcomeMessage() {
+        return driver.findElement(welcomeText).getText();
+    }
+}
+
+package tests;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
+import pages.HomePage;
+import pages.LoginPage;
+import utilities.BaseTest;
+
+public class LoginTest extends BaseTest {
+
+    @Test
+    public void validLoginTest() {
+        LoginPage loginPage = new LoginPage(driver);
+        HomePage homePage = new HomePage(driver);
+
+        loginPage.enterUsername("admin");
+        loginPage.enterPassword("admin123");
+        loginPage.clickLogin();
+
+        String welcomeMessage = homePage.getWelcomeMessage();
+        Assert.assertTrue(welcomeMessage.contains("Welcome"), "Login Failed or Welcome Message Missing");
+    }
+}
